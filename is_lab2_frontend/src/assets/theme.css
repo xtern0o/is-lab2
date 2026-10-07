@@ -1,0 +1,113 @@
+:root {
+  color: #3c1613;
+  background: #d56538;
+  font-family: Arial, Helvetica, sans-serif;
+  font-synthesis: none;
+  --cream: #f3dfb7;
+  --paper: #fff4d7;
+  --orange: #e87232;
+  --brick: #a82f24;
+  --burgundy: #641e22;
+  --ink: #3c1613;
+  --yellow: #f3b942;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#app {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+body {
+  min-height: 100vh;
+  background: radial-gradient(circle at 50% -20%, #f0a25f 0, #d56538 48%, #ac3428 100%);
+}
+button,
+input,
+select {
+  color: inherit;
+  font: inherit;
+}
+
+.site-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  border: 3px solid var(--ink);
+}
+.workspace {
+  flex: 1;
+  padding: 54px 24px 70px;
+  border-block: 3px solid var(--ink);
+}
+
+.xp-button {
+  padding: 8px 12px;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  color: var(--ink);
+  background: linear-gradient(#f7d99f, #dda365);
+  box-shadow:
+    inset 1px 1px #fff4d9,
+    inset -1px -1px #9d5a3f;
+  font:
+    800 11px/1 'Courier New',
+    monospace;
+  cursor: pointer;
+}
+.xp-button:hover:not(:disabled) {
+  background: linear-gradient(#fbe4b4, #e7af70);
+}
+.xp-button:active:not(:disabled) {
+  box-shadow:
+    inset 1px 1px #9d5a3f,
+    inset -1px -1px #fff0c8;
+  transform: translateY(1px);
+}
+.xp-button:disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+.xp-button--primary {
+  color: #fff2cc;
+  background: linear-gradient(#bd4932, #922825);
+  box-shadow:
+    inset 1px 1px #dc7852,
+    inset -1px -1px #641e22;
+}
+.xp-button--primary:hover:not(:disabled) {
+  background: linear-gradient(#c95738, #9f3028);
+}
+.xp-button--danger {
+  color: #7e211e;
+  background: linear-gradient(#f3c595, #d88b5c);
+}
+.xp-button--compact {
+  padding: 0 9px;
+  font-size: 9px;
+}
+
+.text-button {
+  padding: 2px 0;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.text-button:disabled {
+  border-color: transparent;
+  opacity: 0.35;
+  cursor: default;
+}
+
+@media (max-width: 760px) {
+  .workspace {
+    padding: 25px 10px 40px;
+  }
+}
