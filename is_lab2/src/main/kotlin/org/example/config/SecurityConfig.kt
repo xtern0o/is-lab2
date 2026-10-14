@@ -4,10 +4,13 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
+import org.springframework.core.convert.converter.Converter
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.invoke
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator
@@ -48,9 +51,10 @@ class SecurityConfig {
             oauth2ResourceServer {
                 jwt {
                     jwtAuthenticationConverter = JwtAuthenticationConverter().apply {
-                        setJwtGrantedAuthoritiesConverter(
-                            CustomJwtGrantedAuthorityConverter()
-                        )
+                        setJwtGrantedAuthoritiesConverter { jwt ->
+                            val role = jwt.claims["role"] ?: return@setJwtGrantedAuthoritiesConverter emptyList()
+                            listOf(SimpleGrantedAuthority("ROLE_$role"))
+                        }
                     }
                 }
             }
