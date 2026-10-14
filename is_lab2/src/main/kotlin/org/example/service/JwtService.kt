@@ -64,8 +64,11 @@ class JwtService(
             .subject(user.id.toString())
             .issuedAt(now)
             .expiresAt(now.plusSeconds(ttl))
-            .claim("name", user.name)
-            .claim("type", type)
+            .claims {
+                it["name"] = user.name
+                it["role"] = user.role.name
+                it["type"] = type
+            }
             .build()
 
         val header = JwsHeader
