@@ -1,7 +1,9 @@
 package org.example.controller
 
 import org.example.dto.common.request.EntityImportFileRequest
+import org.example.dto.common.response.ImportFileResponse
 import org.example.importing.parser.HoconImportParser
+import org.example.service.ImportFileService
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -13,16 +15,16 @@ import java.nio.charset.StandardCharsets
 @RestController
 @RequestMapping("/api/imports")
 class ImportFileController(
-    private val hoconImportParser: HoconImportParser
+    private val hoconImportParser: HoconImportParser,
+    private val importFileService: ImportFileService
 ) {
 
     @PostMapping(
-        "/echo",
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     fun importMoviesEchoTest(
         @RequestPart("file") file: MultipartFile,
-    ): EntityImportFileRequest {
+    ): ImportFileResponse {
         if (file.isEmpty) {
             throw IllegalArgumentException("file can not be empty")
         }
@@ -31,9 +33,11 @@ class ImportFileController(
             .bufferedReader(StandardCharsets.UTF_8)
             .use { it.readText() }
 
-        return hoconImportParser.parse(
+        val request = hoconImportParser.parse(
             content,
             EntityImportFileRequest::class.java,
         )
+
+        return importFileService.importEntities(request)
     }
 }

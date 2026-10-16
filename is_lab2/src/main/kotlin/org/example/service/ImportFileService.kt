@@ -27,30 +27,36 @@ class ImportFileService(
     fun importEntities(
         request: EntityImportFileRequest,
     ): ImportFileResponse {
-        var importedObjectsCount = 0
+        var moviesCount = 0
+        var personsCount = 0
+        var coordinatesCount = 0
+        var locationsCount = 0
 
         request.locations.forEach {
             locationService.create(it.toUpsertRequest())
-            importedObjectsCount++
+            locationsCount++
         }
 
-        request.coordinates.forEach {
+        request.coordinates.forEach{
             coordinatesService.create(it.toUpsertRequest())
-            importedObjectsCount++
+            coordinatesCount++
         }
 
         request.persons.forEach {
             createPerson(it)
-            importedObjectsCount++
+            personsCount++
         }
 
         request.movies.forEach {
             createMovie(it)
-            importedObjectsCount++
+            moviesCount++
         }
 
         return ImportFileResponse(
-            importedCount = importedObjectsCount,
+            moviesCount,
+            personsCount,
+            coordinatesCount,
+            locationsCount,
         )
 
     }
