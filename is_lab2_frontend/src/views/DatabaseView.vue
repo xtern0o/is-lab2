@@ -26,7 +26,6 @@ const {
   isOperations,
   isImports,
   windowTitle,
-  windowStatus,
   databaseRows,
   visibleRows,
   pageCount,
@@ -60,7 +59,6 @@ onUnmounted(stopUpdates)
       <div class="window-titlebar">
         <div class="window-orb" aria-hidden="true"></div>
         <h1 id="window-title">{{ windowTitle }}</h1>
-        <span>{{ windowStatus }}</span>
       </div>
 
       <nav class="tabs" aria-label="Database sections">
@@ -178,7 +176,7 @@ onUnmounted(stopUpdates)
   min-height: 36px;
   padding: 5px 7px;
   display: grid;
-  grid-template-columns: 22px 1fr auto;
+  grid-template-columns: 22px 1fr;
   align-items: center;
   gap: 9px;
   color: #ffedc8;

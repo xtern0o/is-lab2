@@ -77,13 +77,6 @@ export const useDatabaseStore = defineStore('database', () => {
       ? 'FILE IMPORT'
       : activeDefinition.value.typeName,
 )
-  const windowStatus = computed(() => {
-  if (isOperations.value) return '05 actions available'
-  if (isImports.value) return 'HOCON files'
-
-  const count = String(totalElements.value).padStart(2, '0')
-  return `${count} ${activeDefinition.value.statusNoun} online`
-})
 
   function matchesSearch(record: EntityRecord, search: string) {
     return activeDefinition.value.searchableKeys.some((key) =>
@@ -290,7 +283,6 @@ export const useDatabaseStore = defineStore('database', () => {
     isOperations,
     isImports,
     windowTitle,
-    windowStatus,
     databaseRows,
     visibleRows,
     pageCount,
