@@ -20,7 +20,7 @@ function logout() {
       <div class="money-separator" aria-hidden="true">
         <img :src="moneySeparator" alt="" />
       </div>
-      <RouterLink class="brand-lockup" to="/"><strong>is_lab1</strong></RouterLink>
+      <RouterLink class="brand-lockup" to="/"><strong>is_lab2</strong></RouterLink>
       <div class="money-separator" aria-hidden="true">
         <img :src="moneySeparator" alt="" />
       </div>
@@ -32,7 +32,7 @@ function logout() {
         <button v-else class="xp-button" type="button" @click="router.push('/auth')">
           войти в аккаунт
         </button>
-        <p class="variant">VARIANT: <strong>55995</strong></p>
+        <p class="variant">VARIANT: <strong>55995/*</strong></p>
       </div>
     </div>
   </header>
