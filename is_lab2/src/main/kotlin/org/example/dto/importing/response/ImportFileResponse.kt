@@ -1,4 +1,4 @@
-package org.example.dto.common.response
+package org.example.dto.importing.response
 
 /**
  * Считает верхнеуровневые сущности - это подсчет без учета

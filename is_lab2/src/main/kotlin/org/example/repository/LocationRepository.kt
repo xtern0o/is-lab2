@@ -10,4 +10,15 @@ interface LocationRepository : JpaRepository<Location, Int> {
         name: String,
         pageable: Pageable,
     ): Page<Location>
+
+    /**
+     * business-layer unique constraint
+     */
+    fun existsByXAndYAndZ(x: Double, y: Int, z: Double?): Boolean
+    fun existsByXAndYAndZAndIdNot(
+        x: Double,
+        y: Int,
+        z: Double,
+        id: Int,
+    ): Boolean
 }

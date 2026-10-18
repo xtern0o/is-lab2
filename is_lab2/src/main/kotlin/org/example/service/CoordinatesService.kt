@@ -25,6 +25,8 @@ class CoordinatesService(
 
     @Transactional
     fun create(request: CoordinatesUpsertRequest): CoordinatesResponse {
+        validateUpsert(request)
+
         val coordinates = Coordinates(
             x = requireNotNull(request.x),
             y = requireNotNull(request.y),
@@ -37,11 +39,15 @@ class CoordinatesService(
     fun update(
         id: Int,
         request: CoordinatesUpsertRequest,
-    ): CoordinatesResponse =
-        findCoordinates(id).apply {
+    ): CoordinatesResponse {
+        validateUpsert(request)
+
+        return findCoordinates(id).apply {
             x = requireNotNull(request.x)
             y = requireNotNull(request.y)
         }.toResponse()
+    }
+
 
     @Transactional
     fun delete(id: Int) {
@@ -54,6 +60,12 @@ class CoordinatesService(
         }
 
         coordinatesRepository.deleteById(id)
+    }
+
+    fun validateUpsert(request: CoordinatesUpsertRequest) {
+        if (coordinatesRepository.existsByXAndY(request.x!!, request.y!!)) {
+            throw IllegalArgumentException("coordinates with x=${request.x} and y=${request.y}) already exists")
+        }
     }
 
     private fun findCoordinates(id: Int): Coordinates =

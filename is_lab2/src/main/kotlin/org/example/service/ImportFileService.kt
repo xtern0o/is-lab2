@@ -1,7 +1,7 @@
 package org.example.service
 
-import org.example.dto.common.request.EntityImportFileRequest
-import org.example.dto.common.response.ImportFileResponse
+import org.example.dto.importing.request.EntityImportFileRequest
+import org.example.dto.importing.response.ImportFileResponse
 import org.example.dto.coordinates.request.CoordinatesImportRequest
 import org.example.dto.coordinates.request.CoordinatesUpsertRequest
 import org.example.dto.location.request.LocationImportRequest

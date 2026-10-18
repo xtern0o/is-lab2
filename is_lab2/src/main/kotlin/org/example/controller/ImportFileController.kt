@@ -1,7 +1,7 @@
 package org.example.controller
 
-import org.example.dto.common.request.EntityImportFileRequest
-import org.example.dto.common.response.ImportFileResponse
+import org.example.dto.importing.request.EntityImportFileRequest
+import org.example.dto.importing.response.ImportFileResponse
 import org.example.importing.parser.HoconImportParser
 import org.example.service.ImportFileService
 import org.springframework.http.MediaType

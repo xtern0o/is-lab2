@@ -36,6 +36,8 @@ class LocationService(
 
     @Transactional
     fun create(request: LocationUpsertRequest): LocationResponse {
+        validateUpsert(request)
+
         val location = Location(
             x = requireNotNull(request.x),
             y = requireNotNull(request.y),
@@ -50,13 +52,16 @@ class LocationService(
     fun update(
         id: Int,
         request: LocationUpsertRequest,
-    ): LocationResponse =
-        findLocation(id).apply {
+    ): LocationResponse {
+        validateUpsert(request)
+
+        return findLocation(id).apply {
             x = requireNotNull(request.x)
             y = requireNotNull(request.y)
             z = requireNotNull(request.z)
             name = request.name
         }.toResponse()
+    }
 
     @Transactional
     fun delete(id: Int) {
@@ -71,9 +76,31 @@ class LocationService(
         locationRepository.deleteById(id)
     }
 
+    /**
+     * unique constraint validation
+     */
+    fun validateUpsert(request: LocationUpsertRequest, excludedId: Int? = null) {
+        val x = requireNotNull(request.x)
+        val y = requireNotNull(request.y)
+        val z = requireNotNull(request.z)
+
+        val exists = if (excludedId == null) {
+            locationRepository.existsByXAndYAndZ(x, y, z)
+        } else {
+            locationRepository.existsByXAndYAndZAndIdNot(x, y, z, excludedId)
+        }
+
+        if (exists) {
+            throw IllegalStateException(
+                "location with coords ($x, $y, $z) already exists",
+            )
+        }
+    }
+
     private fun findLocation(id: Int): Location =
         locationRepository.findById(id).orElseThrow {
             NoSuchElementException("нет локации с id=$id :(")
         }
+
 
 }

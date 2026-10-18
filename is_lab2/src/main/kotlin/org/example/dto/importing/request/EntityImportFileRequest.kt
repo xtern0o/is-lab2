@@ -1,4 +1,4 @@
-package org.example.dto.common.request
+package org.example.dto.importing.request
 
 import jakarta.validation.Valid
 import org.example.dto.coordinates.request.CoordinatesImportRequest

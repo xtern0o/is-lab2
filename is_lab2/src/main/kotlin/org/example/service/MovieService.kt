@@ -43,6 +43,8 @@ class MovieService(
 
     @Transactional
     fun create(request: MovieUpsertRequest): MovieResponse {
+        validateUpsert(request)
+
         val movie = Movie(
             name = requireNotNull(request.name),
             coordinates = findCoordinates(requireNotNull(request.coordinatesId)),
@@ -65,8 +67,11 @@ class MovieService(
     fun update(
         id: Int,
         request: MovieUpsertRequest,
-    ): MovieResponse =
-        findMovieDetailed(id).apply {
+    ): MovieResponse {
+        val movie = findMovieDetailed(id)
+        validateUpsert(request, excludedId = id)
+
+        movie.apply {
             name = requireNotNull(request.name)
             coordinates = findCoordinates(requireNotNull(request.coordinatesId))
             oscarsCount = requireNotNull(request.oscarsCount)
@@ -80,6 +85,8 @@ class MovieService(
             goldenPalmCount = requireNotNull(request.goldenPalmCount)
             genre = request.genre
         }.toResponse()
+    }
+
 
     @Transactional
     fun delete(id: Int) {
@@ -134,6 +141,36 @@ class MovieService(
                 movieCount = it.movieCount,
             )
         }
+
+    private fun validateUpsert(
+        request: MovieUpsertRequest,
+        excludedId: Int? = null,
+    ) {
+        val name = requireNotNull(request.name)
+        val directorId = requireNotNull(request.directorId)
+        val length = request.length
+
+        val exists = if (excludedId == null) {
+            movieRepository.existsByNameIgnoreCaseAndDirectorIdAndLength(
+                name,
+                directorId,
+                length,
+            )
+        } else {
+            movieRepository.existsByNameIgnoreCaseAndDirectorIdAndLengthAndIdNot(
+                name,
+                directorId,
+                length,
+                excludedId,
+            )
+        }
+
+        if (exists) {
+            throw IllegalStateException(
+                "movie with name=$name, directorId=$directorId and length=$length already exists",
+            )
+        }
+    }
 
 
     private fun findMovieDetailed(id: Int): Movie =

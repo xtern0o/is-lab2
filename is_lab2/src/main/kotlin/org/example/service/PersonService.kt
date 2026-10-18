@@ -37,6 +37,8 @@ class PersonService(
 
     @Transactional
     fun create(request: PersonUpsertRequest): PersonResponse {
+        validateUpsert(request)
+
         val person = Person(
             name = requireNotNull(request.name),
             eyeColor = request.eyeColor,
@@ -50,8 +52,10 @@ class PersonService(
     }
 
     @Transactional
-    fun update(id: Int, request: PersonUpsertRequest): PersonResponse =
-        findPerson(id).apply {
+    fun update(id: Int, request: PersonUpsertRequest): PersonResponse {
+        validateUpsert(request)
+
+        return findPerson(id).apply {
             name = requireNotNull(request.name)
             eyeColor = request.eyeColor
             hairColor = requireNotNull(request.hairColor)
@@ -59,6 +63,8 @@ class PersonService(
             height = requireNotNull(request.height)
             nationality = request.nationality
         }.toResponse()
+    }
+
 
     @Transactional
     fun delete(id: Int) {
@@ -77,7 +83,12 @@ class PersonService(
         personRepository.deleteById(id)
     }
 
+    /**
+     * unique constraint validation
+     */
+    fun validateUpsert(request: PersonUpsertRequest): Unit {
 
+    }
 
     private fun findPerson(id: Int): Person =
         personRepository.findOneById(id)
@@ -88,4 +99,5 @@ class PersonService(
         locationRepository.findById(id).orElseThrow {
             NoSuchElementException("Локация с id=$id не найдена.")
         }
+
 }

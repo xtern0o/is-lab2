@@ -32,6 +32,21 @@ interface MovieRepository : JpaRepository<Movie, Int> {
     fun existsByScreenwriterId(id: Int): Boolean
     fun existsByOperatorId(id: Int): Boolean
 
+    /**
+     * business layer unique constraints
+     */
+    fun existsByNameIgnoreCaseAndDirectorIdAndLength(
+        name: String,
+        directorId: Int,
+        length: Long?,
+    ): Boolean
+    fun existsByNameIgnoreCaseAndDirectorIdAndLengthAndIdNot(
+        name: String,
+        directorId: Int,
+        length: Long?,
+        id: Int,
+    ): Boolean
+
     fun existsByCoordinatesId(id: Int): Boolean
 
     @EntityGraph(
