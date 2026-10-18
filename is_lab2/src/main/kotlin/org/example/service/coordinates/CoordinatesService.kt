@@ -40,7 +40,7 @@ class CoordinatesService(
         id: Int,
         request: CoordinatesUpsertRequest,
     ): CoordinatesResponse {
-        validateUpsert(request)
+        validateUpsert(request, excludedId = id)
 
         return findCoordinates(id).apply {
             x = requireNotNull(request.x)
@@ -62,9 +62,27 @@ class CoordinatesService(
         coordinatesRepository.deleteById(id)
     }
 
-    fun validateUpsert(request: CoordinatesUpsertRequest) {
-        if (coordinatesRepository.existsByXAndY(request.x!!, request.y!!)) {
-            throw IllegalArgumentException("coordinates with x=${request.x} and y=${request.y}) already exists")
+    fun validateUpsert(
+        request: CoordinatesUpsertRequest,
+        excludedId: Int? = null,
+    ) {
+        val x = requireNotNull(request.x) {
+            "x обязателен"
+        }
+        val y = requireNotNull(request.y) {
+            "y обязателен"
+        }
+
+        val exists = if (excludedId == null) {
+            coordinatesRepository.existsByXAndY(x, y)
+        } else {
+            coordinatesRepository.existsByXAndYAndIdNot(x, y, excludedId)
+        }
+
+        if (exists) {
+            throw IllegalStateException(
+                "coordinates with x=$x and y=$y already exist",
+            )
         }
     }
 

@@ -1,6 +1,7 @@
 package org.example.controller
 
 import org.example.dto.importing.response.ImportHistoryResponse
+import org.example.service.event.DatabaseEventsService
 import org.example.service.importing.ImportFileService
 import org.example.service.importing.ImportHistoryService
 import org.springframework.data.domain.Page
@@ -23,7 +24,8 @@ import java.util.UUID
 @RequestMapping("/api/imports")
 class ImportFileController(
     private val importFileService: ImportFileService,
-    private val historyService: ImportHistoryService
+    private val historyService: ImportHistoryService,
+    private val eventsService: DatabaseEventsService,
 ) {
 
     @PostMapping(
@@ -42,7 +44,10 @@ class ImportFileController(
             .use { it.readText() }
 
         val userId = UUID.fromString(jwt.subject)
-        return importFileService.importFile(content, userId)
+        val response = importFileService.importFile(content, userId)
+
+        eventsService.publish("import_history")
+        return response
     }
 
     @GetMapping("/history")

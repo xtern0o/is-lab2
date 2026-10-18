@@ -54,7 +54,7 @@ class LocationService(
         id: Int,
         request: LocationUpsertRequest,
     ): LocationResponse {
-        validateUpsert(request)
+        validateUpsert(request, excludedId = id)
 
         return findLocation(id).apply {
             x = requireNotNull(request.x)
