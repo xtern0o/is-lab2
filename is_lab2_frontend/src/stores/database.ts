@@ -59,6 +59,7 @@ export const useDatabaseStore = defineStore('database', () => {
   const sortDescending = ref(false)
   const pageCount = ref(1)
   const totalElements = ref(0)
+  const importHistoryVersion = ref(0)
   const selectedEntityType = ref<DataTabId | null>(null)
   const selectedRecordId = ref('')
   const isCreating = ref(false)
@@ -71,12 +72,12 @@ export const useDatabaseStore = defineStore('database', () => {
   const isOperations = computed(() => activeTab.value === 'operations')
   const isImports = computed(() => activeTab.value === 'imports')
   const windowTitle = computed(() =>
-  isOperations.value
-    ? 'SPECIAL OPERATIONS'
-    : isImports.value
-      ? 'FILE IMPORT'
-      : activeDefinition.value.typeName,
-)
+    isOperations.value
+      ? 'SPECIAL OPERATIONS'
+      : isImports.value
+        ? 'FILE IMPORT'
+        : activeDefinition.value.typeName,
+  )
 
   function matchesSearch(record: EntityRecord, search: string) {
     return activeDefinition.value.searchableKeys.some((key) =>
@@ -193,7 +194,9 @@ export const useDatabaseStore = defineStore('database', () => {
     if (unsubscribeUpdates) return
 
     unsubscribeUpdates = subscribeToUpdates((entity) => {
-      if (!isOperations.value && entity === activeEntityType.value) {
+      if (entity === 'import_history') {
+        importHistoryVersion.value++
+      } else if (!isOperations.value && entity === activeEntityType.value) {
         void loadPage()
       }
     })
@@ -286,6 +289,7 @@ export const useDatabaseStore = defineStore('database', () => {
     databaseRows,
     visibleRows,
     pageCount,
+    importHistoryVersion,
     selectTab,
     searchAll,
     clearSearch,

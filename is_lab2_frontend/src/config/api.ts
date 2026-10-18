@@ -91,6 +91,15 @@ export async function apiPut(path: string, body: object) {
   })
 }
 
+export async function apiPatch(path: string, body: object) {
+  const response = await request(path, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  return response.json()
+}
+
 export async function apiDelete(path: string) {
   await request(path, { method: 'DELETE' })
 }

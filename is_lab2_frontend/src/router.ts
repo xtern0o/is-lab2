@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth'
+import AdminView from '@/views/AdminView.vue'
 import AuthView from '@/views/AuthView.vue'
 import DatabaseView from '@/views/DatabaseView.vue'
 
@@ -16,6 +17,11 @@ export const router = createRouter({
       path: '/auth',
       component: AuthView,
     },
+    {
+      path: '/admin',
+      component: AdminView,
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
   ],
 })
 
@@ -27,6 +33,10 @@ router.beforeEach((to) => {
   }
 
   if (to.path === '/auth' && auth.isAuthenticated) {
+    return '/'
+  }
+
+  if (to.meta.requiresAdmin && auth.role !== 'ADMIN') {
     return '/'
   }
 })

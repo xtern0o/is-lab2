@@ -1,10 +1,9 @@
 import { fetchEventSource } from '@microsoft/fetch-event-source'
 
 import { API_BASE_URL, refreshAccessToken } from '@/config/api'
-import type { DataTabId } from '@/domain/types'
 import { useAuthStore } from '@/stores/auth'
 
-export function subscribeToUpdates(onUpdate: (entity: DataTabId) => void) {
+export function subscribeToUpdates(onUpdate: (entity: string) => void) {
   const auth = useAuthStore()
   const controller = new AbortController()
 
@@ -30,7 +29,7 @@ export function subscribeToUpdates(onUpdate: (entity: DataTabId) => void) {
     },
     onmessage(message) {
       if (message.event === 'updated') {
-        onUpdate(message.data as DataTabId)
+        onUpdate(message.data)
       }
     },
     onclose() {

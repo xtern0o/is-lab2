@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import moneySeparator from '@/assets/img/money-18548_256.gif'
+import { computed } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const router = useRouter()
+
+const isAdmin = computed(() => auth.role === 'ADMIN')
 
 function logout() {
   auth.logout()
@@ -26,8 +29,13 @@ function logout() {
       </div>
       <div class="account-block">
         <div v-if="auth.isAuthenticated" class="account-user">
-          <strong class="account-name">{{ auth.username || 'authorized' }}</strong>
-          <button class="xp-button" type="button" @click="logout">выйти из аккаунта</button>
+          <strong class="account-name">
+            {{ isAdmin ? 'GOD: ' : '' }}{{ auth.username || 'authorized' }}
+          </strong>
+          <div class="account-actions">
+            <RouterLink v-if="isAdmin" class="xp-button admin-link" to="/admin">admin</RouterLink>
+            <button class="xp-button" type="button" @click="logout">выйти из аккаунта</button>
+          </div>
         </div>
         <button v-else class="xp-button" type="button" @click="router.push('/auth')">
           войти в аккаунт
@@ -84,11 +92,25 @@ function logout() {
   gap: 8px;
 }
 
+.account-actions {
+  display: grid;
+  gap: 5px;
+}
+
+.account-actions .xp-button {
+  width: 100%;
+  text-align: center;
+}
+
 .account-name {
   color: var(--brick);
   font:
     800 14px/1.2 'Courier New',
     monospace;
+}
+
+.admin-link {
+  text-decoration: none;
 }
 
 .brand-lockup,

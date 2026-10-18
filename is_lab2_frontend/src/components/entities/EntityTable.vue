@@ -7,10 +7,14 @@ import type { ColumnDefinition, EntityRecord } from '@/domain/types'
 const sortKey = ref<string | null>(null)
 const sortDescending = ref(false)
 
-const props = defineProps<{
-  columns: readonly ColumnDefinition[]
-  rows: EntityRecord[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    columns: readonly ColumnDefinition[]
+    rows: EntityRecord[]
+    showActions?: boolean
+  }>(),
+  { showActions: true },
+)
 
 const emit = defineEmits<{ open: [id: string] }>()
 const tableWidth = computed(() => `${Math.max(780, props.columns.length * 125)}px`)
@@ -58,13 +62,13 @@ function sortBy(key: string) {
               {{ sortDescending ? '↓' : '↑' }}
             </span>
           </th>
-          <th class="action-cell" scope="col">ACTION</th>
+          <th v-if="showActions" class="action-cell" scope="col">ACTION</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="row in sortedRows" :key="row.id">
           <td v-for="column in columns" :key="column.key">{{ row[column.key] || '--' }}</td>
-          <td class="action-cell">
+          <td v-if="showActions" class="action-cell">
             <button
               class="row-action"
               type="button"
@@ -76,7 +80,9 @@ function sortBy(key: string) {
           </td>
         </tr>
         <tr v-if="rows.length === 0">
-          <td :colspan="columns.length + 1" class="empty-state">NO RECORDS FOUND</td>
+          <td :colspan="columns.length + (showActions ? 1 : 0)" class="empty-state">
+            NO RECORDS FOUND
+          </td>
         </tr>
       </tbody>
     </table>
