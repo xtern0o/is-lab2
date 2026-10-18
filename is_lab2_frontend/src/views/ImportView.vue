@@ -1,3 +1,46 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+
+import { apiPostFile } from '@/config/api'
+import { showError } from '@/shared/errors'
+
+interface ImportResult {
+  moviesCount: number
+  personsCount: number
+  coordinatesCount: number
+  locationsCount: number
+}
+
+const file = ref<File | null>(null)
+const importing = ref(false)
+const result = ref<ImportResult | null>(null)
+
+function selectFile(event: Event) {
+  file.value = (
+    event.target as HTMLInputElement
+  ).files?.[0] ?? null
+  result.value = null
+}
+
+async function importFile() {
+  if (!file.value) return
+
+  try {
+    importing.value = true
+    result.value = (
+      await apiPostFile('/imports', file.value)
+    ) as ImportResult
+  } catch (error) {
+    showError(
+      'не удалось импортировать файл :((',
+      error instanceof Error ? error.message : 'нам не сообщили что за ошибка',
+    )
+  } finally {
+    importing.value = false
+  }
+}
+</script>
+
 <template>
   <section class="import-view">
     <aside class="panel">
@@ -8,34 +51,39 @@
       </div>
     </aside>
 
-    <form class="panel" @submit.prevent>
+    <form class="panel" @submit.prevent="importFile">
       <header>new HOCON (.conf) import</header>
 
       <div class="file-form">
-        <p>выберите <strong>.conf</strong> или <strong>.hocon</strong> файл.</p>
-
         <details class="format-help">
-          <summary>подробнее о формате hocon</summary>
+          <summary>выберите <strong>.conf</strong> или <strong>.hocon</strong> файл.</summary>
           <p>
-            принимается формат HOCON (.conf)!!
             <a
               href="https://github.com/lightbend/config/blob/main/HOCON.md"
               target="_blank"
               rel="noopener noreferrer"
             >
-              дока
+              подробнее о формате hocon
             </a>
           </p>
         </details>
 
-        <input type="file" accept=".conf,.hocon" />
+        <input type="file" accept=".conf,.hocon" @change="selectFile" />
         <button
           class="xp-button xp-button--primary import-button"
           type="submit"
-          disabled
+          :disabled="!file || importing"
         >
-          import file
+          {{ importing ? 'importing...' : 'import file' }}
         </button>
+
+        <div v-if="result" class="import-result" role="status">
+          <strong>IMPORT COMPLETED</strong>
+          <span>movies: {{ result.moviesCount }}</span>
+          <span>persons: {{ result.personsCount }}</span>
+          <span>coordinates: {{ result.coordinatesCount }}</span>
+          <span>locations: {{ result.locationsCount }}</span>
+        </div>
       </div>
     </form>
   </section>
@@ -63,7 +111,23 @@ header {
   padding: 10px;
   color: #ffedcb;
   background: var(--burgundy);
-  font: 800 10px/1 'Courier New', monospace;
+  font:
+    800 10px/1 'Courier New',
+    monospace;
+}
+
+.import-result {
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 6px 20px;
+  border: 2px solid var(--ink);
+  background: #f6d9a4;
+  text-align: left;
+}
+
+.import-result strong {
+  grid-column: 1 / -1;
 }
 
 .empty-state,
@@ -76,7 +140,9 @@ header {
   gap: 14px;
   color: #805a49;
   text-align: center;
-  font: 700 14px/1.4 'Courier New', monospace;
+  font:
+    700 14px/1.4 'Courier New',
+    monospace;
 }
 
 .empty-state strong,
