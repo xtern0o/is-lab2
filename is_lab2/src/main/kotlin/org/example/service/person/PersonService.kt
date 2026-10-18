@@ -11,6 +11,7 @@ import org.example.repository.PersonRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
@@ -35,7 +36,7 @@ class PersonService(
     fun getById(id: Int): PersonResponse =
         findPerson(id).toResponse()
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun create(request: PersonUpsertRequest): PersonResponse {
         validateUpsert(request)
 
@@ -51,7 +52,7 @@ class PersonService(
         return personRepository.save(person).toResponse()
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun update(id: Int, request: PersonUpsertRequest): PersonResponse {
         validateUpsert(request)
 
@@ -87,7 +88,7 @@ class PersonService(
      * unique constraint validation
      */
     fun validateUpsert(request: PersonUpsertRequest): Unit {
-
+        // хз что добавить
     }
 
     private fun findPerson(id: Int): Person =

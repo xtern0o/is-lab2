@@ -2,6 +2,8 @@ package org.example.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -26,6 +28,7 @@ class User(
     @field:Column(nullable = false)
     var passwordHash: String,
 
+    @field:Enumerated(EnumType.STRING)
     @field:Column(nullable = false)
     var role: Role = Role.USER,
 )

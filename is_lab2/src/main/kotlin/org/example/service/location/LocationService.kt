@@ -9,6 +9,7 @@ import org.example.repository.PersonRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
@@ -34,7 +35,7 @@ class LocationService(
     fun getById(id: Int): LocationResponse =
         findLocation(id).toResponse()
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun create(request: LocationUpsertRequest): LocationResponse {
         validateUpsert(request)
 
@@ -48,7 +49,7 @@ class LocationService(
         return locationRepository.save(location).toResponse()
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun update(
         id: Int,
         request: LocationUpsertRequest,

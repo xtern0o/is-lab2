@@ -8,6 +8,7 @@ import org.example.dto.movie.response.OscarsCountGroupResponse
 import org.example.entity.Coordinates
 import org.example.entity.Movie
 import org.example.entity.Person
+import org.example.entity.enums.MovieGenre
 import org.example.entity.toResponse
 import org.example.repository.CoordinatesRepository
 import org.example.repository.LocationRepository
@@ -16,12 +17,12 @@ import org.example.repository.PersonRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class MovieService(
     private val movieRepository: MovieRepository,
-    private val locationRepository: LocationRepository,
     private val personRepository: PersonRepository,
     private val coordinatesRepository: CoordinatesRepository
 ) {
@@ -41,7 +42,7 @@ class MovieService(
 
     fun getById(id: Int): MovieResponse = findMovieDetailed(id).toResponse()
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun create(request: MovieUpsertRequest): MovieResponse {
         validateUpsert(request)
 
@@ -63,7 +64,7 @@ class MovieService(
         return movieRepository.save(movie).toResponse()
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun update(
         id: Int,
         request: MovieUpsertRequest,
@@ -149,6 +150,8 @@ class MovieService(
         val name = requireNotNull(request.name)
         val directorId = requireNotNull(request.directorId)
         val length = request.length
+        val coordinates = coordinatesRepository.findById(requireNotNull(request.coordinatesId)).orElseThrow()
+        val genre = request.genre
 
         val exists = if (excludedId == null) {
             movieRepository.existsByNameIgnoreCaseAndDirectorIdAndLength(
@@ -170,6 +173,15 @@ class MovieService(
                 "movie with name=$name, directorId=$directorId and length=$length already exists",
             )
         }
+
+        if (genre != null) {
+            if (genre == MovieGenre.WESTERN && !(coordinates.x in 200.0..455.0 && coordinates.y in -123..50)) {
+                throw IllegalArgumentException(
+                    "WESTERN фильмы могут быть только с коордами 200<=x<=455, -123<=y<=50. Вы прислали: x=${coordinates.x}, y=${coordinates.y}",
+                )
+            }
+        }
+
     }
 
 
