@@ -1,4 +1,4 @@
-package org.example.service
+package org.example.service.coordinates
 
 import org.example.dto.coordinates.request.CoordinatesUpsertRequest
 import org.example.dto.coordinates.response.CoordinatesResponse

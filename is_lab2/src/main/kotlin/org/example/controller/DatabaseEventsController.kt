@@ -1,6 +1,6 @@
 package org.example.controller
 
-import org.example.service.DatabaseEventsService
+import org.example.service.event.DatabaseEventsService
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping

@@ -1,4 +1,4 @@
-package org.example.service
+package org.example.service.person
 
 import org.example.dto.person.request.PersonUpsertRequest
 import org.example.dto.person.response.PersonResponse

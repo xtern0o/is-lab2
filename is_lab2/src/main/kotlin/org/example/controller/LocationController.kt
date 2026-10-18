@@ -4,8 +4,8 @@ import jakarta.validation.Valid
 import org.example.dto.location.request.LocationUpsertRequest
 import org.example.dto.location.response.LocationResponse
 import org.example.entity.Location
-import org.example.service.DatabaseEventsService
-import org.example.service.LocationService
+import org.example.service.event.DatabaseEventsService
+import org.example.service.location.LocationService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault

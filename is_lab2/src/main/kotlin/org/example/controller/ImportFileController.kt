@@ -1,22 +1,29 @@
 package org.example.controller
 
-import org.example.dto.importing.request.EntityImportFileRequest
-import org.example.dto.importing.response.ImportFileResponse
-import org.example.importing.parser.HoconImportParser
-import org.example.service.ImportFileService
+import org.example.dto.importing.response.ImportHistoryResponse
+import org.example.service.importing.ImportFileService
+import org.example.service.importing.ImportHistoryService
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.MediaType
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import java.nio.charset.StandardCharsets
+import java.util.UUID
 
 @RestController
 @RequestMapping("/api/imports")
 class ImportFileController(
-    private val hoconImportParser: HoconImportParser,
-    private val importFileService: ImportFileService
+    private val importFileService: ImportFileService,
+    private val historyService: ImportHistoryService
 ) {
 
     @PostMapping(
@@ -24,7 +31,8 @@ class ImportFileController(
     )
     fun importMoviesEchoTest(
         @RequestPart("file") file: MultipartFile,
-    ): ImportFileResponse {
+        @AuthenticationPrincipal jwt: Jwt,
+    ): ImportHistoryResponse {
         if (file.isEmpty) {
             throw IllegalArgumentException("file can not be empty")
         }
@@ -33,11 +41,30 @@ class ImportFileController(
             .bufferedReader(StandardCharsets.UTF_8)
             .use { it.readText() }
 
-        val request = hoconImportParser.parse(
-            content,
-            EntityImportFileRequest::class.java,
+        val userId = UUID.fromString(jwt.subject)
+        return importFileService.importFile(content, userId)
+    }
+
+    @GetMapping("/history")
+    fun getMyHistory(
+        @AuthenticationPrincipal jwt: Jwt,
+        @PageableDefault(
+            sort = ["createdAt"],
+            direction = Sort.Direction.DESC
+        ) pageable: Pageable,
+    ): Page<ImportHistoryResponse> =
+        historyService.getPageByUserId(
+            UUID.fromString(jwt.subject),
+            pageable,
         )
 
-        return importFileService.importEntities(request)
-    }
+    // были мысли вынести в /admin/imports эндпоинт но много кода лишнего мне лень
+    @GetMapping("/history/all")
+    fun getAllHistory(
+        @PageableDefault(
+            sort = ["createdAt"],
+            direction = Sort.Direction.DESC
+        ) pageable: Pageable,
+    ): Page<ImportHistoryResponse> =
+        historyService.getPage(pageable)
 }

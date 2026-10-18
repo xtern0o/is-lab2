@@ -4,8 +4,8 @@ import jakarta.validation.Valid
 import org.example.dto.person.request.PersonUpsertRequest
 import org.example.dto.person.response.PersonResponse
 import org.example.repository.PersonRepository
-import org.example.service.DatabaseEventsService
-import org.example.service.PersonService
+import org.example.service.event.DatabaseEventsService
+import org.example.service.person.PersonService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault

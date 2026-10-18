@@ -1,9 +1,8 @@
-package org.example.service
+package org.example.service.event
 
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.CopyOnWriteArraySet
 
 @Service
 class DatabaseEventsService {

@@ -1,4 +1,4 @@
-package org.example.service
+package org.example.service.movie
 
 import org.example.dto.movie.request.AwardOscarsByLengthRequest
 import org.example.dto.movie.request.MovieUpsertRequest
@@ -71,7 +71,7 @@ class MovieService(
         val movie = findMovieDetailed(id)
         validateUpsert(request, excludedId = id)
 
-        movie.apply {
+        return movie.apply {
             name = requireNotNull(request.name)
             coordinates = findCoordinates(requireNotNull(request.coordinatesId))
             oscarsCount = requireNotNull(request.oscarsCount)

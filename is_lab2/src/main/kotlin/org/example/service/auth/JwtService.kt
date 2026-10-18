@@ -1,4 +1,4 @@
-package org.example.service
+package org.example.service.auth
 
 import org.example.dto.auth.response.UserResponse
 import org.springframework.beans.factory.annotation.Qualifier

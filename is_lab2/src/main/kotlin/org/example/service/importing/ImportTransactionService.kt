@@ -1,7 +1,7 @@
-package org.example.service
+package org.example.service.importing
 
 import org.example.dto.importing.request.EntityImportFileRequest
-import org.example.dto.importing.response.ImportFileResponse
+import org.example.dto.importing.response.ImportHistoryResponse
 import org.example.dto.coordinates.request.CoordinatesImportRequest
 import org.example.dto.coordinates.request.CoordinatesUpsertRequest
 import org.example.dto.location.request.LocationImportRequest
@@ -12,21 +12,38 @@ import org.example.dto.movie.response.MovieResponse
 import org.example.dto.person.request.PersonImportRequest
 import org.example.dto.person.request.PersonUpsertRequest
 import org.example.dto.person.response.PersonResponse
+import org.example.entity.enums.ImportStatus
+import org.example.entity.toResponse
+import org.example.repository.ImportHistoryRepository
+import org.example.service.location.LocationService
+import org.example.service.movie.MovieService
+import org.example.service.person.PersonService
+import org.example.service.coordinates.CoordinatesService
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
+/**
+ * Сервис для сохранения данных из файла
+ */
 @Service
-class ImportFileService(
+class ImportTransactionService(
     private val movieService: MovieService,
     private val personService: PersonService,
     private val coordinatesService: CoordinatesService,
     private val locationService: LocationService,
+    private val importHistoryRepository: ImportHistoryRepository,
 ) {
 
-    @Transactional
+    /**
+     * Импорт данных и обновление статуса
+     */
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun importEntities(
         request: EntityImportFileRequest,
-    ): ImportFileResponse {
+        historyId: UUID,
+    ): ImportHistoryResponse {
         var moviesCount = 0
         var personsCount = 0
         var coordinatesCount = 0
@@ -52,13 +69,17 @@ class ImportFileService(
             moviesCount++
         }
 
-        return ImportFileResponse(
-            moviesCount,
-            personsCount,
-            coordinatesCount,
-            locationsCount,
-        )
+        val history = importHistoryRepository.findById(historyId).orElseThrow()
 
+        history.apply {
+            status = ImportStatus.SUCCESS
+            this.moviesCount = moviesCount
+            this.personsCount = personsCount
+            this.coordinatesCount = coordinatesCount
+            this.locationsCount = locationsCount
+        }
+
+        return history.toResponse()
     }
 
     private fun createPerson(

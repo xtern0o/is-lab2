@@ -1,4 +1,4 @@
-package org.example.service
+package org.example.service.location
 
 import org.example.dto.location.request.LocationUpsertRequest
 import org.example.dto.location.response.LocationResponse
