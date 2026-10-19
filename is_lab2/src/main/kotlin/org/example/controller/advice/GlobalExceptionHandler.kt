@@ -1,6 +1,7 @@
 package org.example.controller.advice
 
 import org.springframework.dao.CannotSerializeTransactionException
+import org.springframework.dao.PessimisticLockingFailureException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ProblemDetail
 import org.springframework.http.converter.HttpMessageNotReadableException
@@ -51,6 +52,15 @@ class GlobalExceptionHandler {
     @ExceptionHandler(CannotSerializeTransactionException::class)
     fun handleSerializationConflict(
         e: CannotSerializeTransactionException,
+    ): ProblemDetail =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT,
+            "операция конфликтует с параллельным запросом, повторите попытку",
+        )
+
+    @ExceptionHandler(PessimisticLockingFailureException::class)
+    fun handleSerializationConflict(
+        exception: PessimisticLockingFailureException,
     ): ProblemDetail =
         ProblemDetail.forStatusAndDetail(
             HttpStatus.CONFLICT,

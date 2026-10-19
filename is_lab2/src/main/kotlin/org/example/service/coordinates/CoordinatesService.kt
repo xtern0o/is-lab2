@@ -9,6 +9,7 @@ import org.example.repository.MovieRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
@@ -23,7 +24,7 @@ class CoordinatesService(
     fun getById(id: Int): CoordinatesResponse =
         findCoordinates(id).toResponse()
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun create(request: CoordinatesUpsertRequest): CoordinatesResponse {
         validateUpsert(request)
 
@@ -35,7 +36,7 @@ class CoordinatesService(
         return coordinatesRepository.save(coordinates).toResponse()
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun update(
         id: Int,
         request: CoordinatesUpsertRequest,
