@@ -87,7 +87,7 @@ class PersonService(
     /**
      * unique constraint validation
      */
-    fun validateUpsert(request: PersonUpsertRequest): Unit {
+    private fun validateUpsert(request: PersonUpsertRequest): Unit {
         // хз что добавить
     }
 

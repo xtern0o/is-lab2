@@ -62,7 +62,7 @@ class CoordinatesService(
         coordinatesRepository.deleteById(id)
     }
 
-    fun validateUpsert(
+    private fun validateUpsert(
         request: CoordinatesUpsertRequest,
         excludedId: Int? = null,
     ) {

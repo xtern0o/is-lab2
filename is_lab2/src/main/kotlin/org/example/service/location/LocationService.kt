@@ -80,7 +80,7 @@ class LocationService(
     /**
      * unique constraint validation
      */
-    fun validateUpsert(request: LocationUpsertRequest, excludedId: Int? = null) {
+    private fun validateUpsert(request: LocationUpsertRequest, excludedId: Int? = null) {
         val x = requireNotNull(request.x)
         val y = requireNotNull(request.y)
         val z = requireNotNull(request.z)
