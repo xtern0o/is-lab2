@@ -1,10 +1,12 @@
-package org.example.service
+package org.example.service.auth
 
 import org.example.dto.auth.request.RefreshTokenRequest
 import org.example.dto.auth.request.UserLoginRequest
 import org.example.dto.auth.request.UserRegisterRequest
 import org.example.dto.auth.response.TokenResponse
 import org.example.dto.auth.response.UserResponse
+import org.example.service.auth.JwtService
+import org.example.service.auth.UserService
 import org.springframework.stereotype.Service
 
 @Service

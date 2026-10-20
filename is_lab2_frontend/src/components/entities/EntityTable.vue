@@ -1,16 +1,48 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 import danger from '@/assets/img/danger-18465_256.gif'
 import type { ColumnDefinition, EntityRecord } from '@/domain/types'
 
-const props = defineProps<{
-  columns: readonly ColumnDefinition[]
-  rows: EntityRecord[]
-}>()
+const sortKey = ref<string | null>(null)
+const sortDescending = ref(false)
+
+const props = withDefaults(
+  defineProps<{
+    columns: readonly ColumnDefinition[]
+    rows: EntityRecord[]
+    showActions?: boolean
+  }>(),
+  { showActions: true },
+)
 
 const emit = defineEmits<{ open: [id: string] }>()
 const tableWidth = computed(() => `${Math.max(780, props.columns.length * 125)}px`)
+
+const collator = new Intl.Collator(undefined, {
+  numeric: true,
+  sensitivity: 'base',
+})
+
+const sortedRows = computed(() => {
+  if (!sortKey.value) return props.rows
+
+  const key = sortKey.value
+
+  return [...props.rows].sort((left, right) => {
+    const result = collator.compare(left[key] ?? '', right[key] ?? '')
+    return sortDescending.value ? -result : result
+  })
+})
+
+function sortBy(key: string) {
+  if (sortKey.value === key) {
+    sortDescending.value = !sortDescending.value
+  } else {
+    sortKey.value = key
+    sortDescending.value = false
+  }
+}
 </script>
 
 <template>
@@ -18,14 +50,25 @@ const tableWidth = computed(() => `${Math.max(780, props.columns.length * 125)}p
     <table :style="{ minWidth: tableWidth }">
       <thead>
         <tr>
-          <th v-for="column in columns" :key="column.key" scope="col">{{ column.label }}</th>
-          <th class="action-cell" scope="col">ACTION</th>
+          <th
+            v-for="column in columns"
+            :key="column.key"
+            scope="col"
+            class="sortable"
+            @click="sortBy(column.key)"
+          >
+            {{ column.label }}
+            <span v-if="sortKey === column.key">
+              {{ sortDescending ? '↓' : '↑' }}
+            </span>
+          </th>
+          <th v-if="showActions" class="action-cell" scope="col">ACTION</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="row in rows" :key="row.id">
+        <tr v-for="row in sortedRows" :key="row.id">
           <td v-for="column in columns" :key="column.key">{{ row[column.key] || '--' }}</td>
-          <td class="action-cell">
+          <td v-if="showActions" class="action-cell">
             <button
               class="row-action"
               type="button"
@@ -37,7 +80,9 @@ const tableWidth = computed(() => `${Math.max(780, props.columns.length * 125)}p
           </td>
         </tr>
         <tr v-if="rows.length === 0">
-          <td :colspan="columns.length + 1" class="empty-state">NO RECORDS FOUND</td>
+          <td :colspan="columns.length + (showActions ? 1 : 0)" class="empty-state">
+            NO RECORDS FOUND
+          </td>
         </tr>
       </tbody>
     </table>
@@ -78,6 +123,15 @@ th {
   background: var(--brick);
   font-size: 10px;
   letter-spacing: 0.05em;
+}
+
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+th.sortable:hover {
+  background: var(--burgundy);
 }
 
 tbody tr:nth-child(even) {

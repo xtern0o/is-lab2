@@ -59,24 +59,25 @@ export const useDatabaseStore = defineStore('database', () => {
   const sortDescending = ref(false)
   const pageCount = ref(1)
   const totalElements = ref(0)
+  const importHistoryVersion = ref(0)
   const selectedEntityType = ref<DataTabId | null>(null)
   const selectedRecordId = ref('')
   const isCreating = ref(false)
 
   const activeEntityType = computed<DataTabId>(() =>
-    activeTab.value === 'operations' ? 'movies' : activeTab.value,
+    activeTab.value === 'operations' || activeTab.value === 'imports' ? 'movies' : activeTab.value,
   )
   const activeDefinition = computed(() => ENTITY_DEFINITIONS[activeEntityType.value])
   const activeRecords = computed(() => collections[activeEntityType.value])
   const isOperations = computed(() => activeTab.value === 'operations')
+  const isImports = computed(() => activeTab.value === 'imports')
   const windowTitle = computed(() =>
-    isOperations.value ? 'SPECIAL OPERATIONS' : activeDefinition.value.typeName,
+    isOperations.value
+      ? 'SPECIAL OPERATIONS'
+      : isImports.value
+        ? 'FILE IMPORT'
+        : activeDefinition.value.typeName,
   )
-  const windowStatus = computed(() => {
-    if (isOperations.value) return '05 actions available'
-    const count = String(totalElements.value).padStart(2, '0')
-    return `${count} ${activeDefinition.value.statusNoun} online`
-  })
 
   function matchesSearch(record: EntityRecord, search: string) {
     return activeDefinition.value.searchableKeys.some((key) =>
@@ -151,7 +152,7 @@ export const useDatabaseStore = defineStore('database', () => {
 
   async function loadPage() {
     const requestId = ++lastRequestId
-    if (isOperations.value) return
+    if (isOperations.value || isImports.value) return
 
     const entityType = activeEntityType.value
     const direction = sortDescending.value ? 'desc' : 'asc'
@@ -193,7 +194,9 @@ export const useDatabaseStore = defineStore('database', () => {
     if (unsubscribeUpdates) return
 
     unsubscribeUpdates = subscribeToUpdates((entity) => {
-      if (!isOperations.value && entity === activeEntityType.value) {
+      if (entity === 'import_history') {
+        importHistoryVersion.value++
+      } else if (!isOperations.value && entity === activeEntityType.value) {
         void loadPage()
       }
     })
@@ -281,11 +284,12 @@ export const useDatabaseStore = defineStore('database', () => {
     isCreating,
     activeDefinition,
     isOperations,
+    isImports,
     windowTitle,
-    windowStatus,
     databaseRows,
     visibleRows,
     pageCount,
+    importHistoryVersion,
     selectTab,
     searchAll,
     clearSearch,

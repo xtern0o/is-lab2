@@ -8,6 +8,7 @@ import { ENTITY_DEFINITIONS } from '@/domain/entitySchemas'
 import type { DataTabId } from '@/domain/types'
 import { useDatabaseStore } from '@/stores/database'
 import SpecialOperationsView from './SpecialOperationsView.vue'
+import ImportView from './ImportView.vue'
 
 const entityTabs = Object.keys(ENTITY_DEFINITIONS) as DataTabId[]
 const store = useDatabaseStore()
@@ -23,8 +24,8 @@ const {
   isCreating,
   activeDefinition,
   isOperations,
+  isImports,
   windowTitle,
-  windowStatus,
   databaseRows,
   visibleRows,
   pageCount,
@@ -58,7 +59,6 @@ onUnmounted(stopUpdates)
       <div class="window-titlebar">
         <div class="window-orb" aria-hidden="true"></div>
         <h1 id="window-title">{{ windowTitle }}</h1>
-        <span>{{ windowStatus }}</span>
       </div>
 
       <nav class="tabs" aria-label="Database sections">
@@ -76,11 +76,19 @@ onUnmounted(stopUpdates)
           :class="{ active: activeTab === 'operations' }"
           @click="selectTab('operations')"
         >
-          SPECIAL OPS
+          special ops
+        </button>
+        <button
+          type="button"
+          :class="{ active: activeTab === 'imports' }"
+          @click="selectTab('imports')"
+        >
+          file import
         </button>
       </nav>
 
-      <SpecialOperationsView v-if="isOperations" />
+      <ImportView v-if="isImports" />
+      <SpecialOperationsView v-else-if="isOperations" />
       <div v-else class="database-content">
         <div class="toolbar">
           <form
@@ -168,7 +176,7 @@ onUnmounted(stopUpdates)
   min-height: 36px;
   padding: 5px 7px;
   display: grid;
-  grid-template-columns: 22px 1fr auto;
+  grid-template-columns: 22px 1fr;
   align-items: center;
   gap: 9px;
   color: #ffedc8;

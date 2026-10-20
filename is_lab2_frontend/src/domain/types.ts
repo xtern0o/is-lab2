@@ -1,5 +1,5 @@
 export type DataTabId = 'movies' | 'persons' | 'locations' | 'coordinates'
-export type TabId = DataTabId | 'operations'
+export type TabId = DataTabId | 'operations' | 'imports'
 
 export interface EntityRecord {
   id: string

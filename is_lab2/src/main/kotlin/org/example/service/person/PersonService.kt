@@ -1,4 +1,4 @@
-package org.example.service
+package org.example.service.person
 
 import org.example.dto.person.request.PersonUpsertRequest
 import org.example.dto.person.response.PersonResponse
@@ -11,6 +11,7 @@ import org.example.repository.PersonRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
@@ -35,8 +36,10 @@ class PersonService(
     fun getById(id: Int): PersonResponse =
         findPerson(id).toResponse()
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun create(request: PersonUpsertRequest): PersonResponse {
+        validateUpsert(request)
+
         val person = Person(
             name = requireNotNull(request.name),
             eyeColor = request.eyeColor,
@@ -49,9 +52,11 @@ class PersonService(
         return personRepository.save(person).toResponse()
     }
 
-    @Transactional
-    fun update(id: Int, request: PersonUpsertRequest): PersonResponse =
-        findPerson(id).apply {
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    fun update(id: Int, request: PersonUpsertRequest): PersonResponse {
+        validateUpsert(request)
+
+        return findPerson(id).apply {
             name = requireNotNull(request.name)
             eyeColor = request.eyeColor
             hairColor = requireNotNull(request.hairColor)
@@ -59,6 +64,8 @@ class PersonService(
             height = requireNotNull(request.height)
             nationality = request.nationality
         }.toResponse()
+    }
+
 
     @Transactional
     fun delete(id: Int) {
@@ -77,7 +84,12 @@ class PersonService(
         personRepository.deleteById(id)
     }
 
-
+    /**
+     * unique constraint validation
+     */
+    private fun validateUpsert(request: PersonUpsertRequest): Unit {
+        // хз что добавить
+    }
 
     private fun findPerson(id: Int): Person =
         personRepository.findOneById(id)
@@ -88,4 +100,5 @@ class PersonService(
         locationRepository.findById(id).orElseThrow {
             NoSuchElementException("Локация с id=$id не найдена.")
         }
+
 }

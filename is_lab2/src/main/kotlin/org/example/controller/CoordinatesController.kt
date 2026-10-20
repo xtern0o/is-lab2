@@ -3,8 +3,8 @@ package org.example.controller
 import jakarta.validation.Valid
 import org.example.dto.coordinates.request.CoordinatesUpsertRequest
 import org.example.dto.coordinates.response.CoordinatesResponse
-import org.example.service.CoordinatesService
-import org.example.service.DatabaseEventsService
+import org.example.service.coordinates.CoordinatesService
+import org.example.service.event.DatabaseEventsService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault

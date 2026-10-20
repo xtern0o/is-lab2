@@ -14,16 +14,21 @@ export const useAuthStore = defineStore('auth', () => {
   const refreshToken = ref(localStorage.getItem(REFRESH_TOKEN))
 
   const isAuthenticated = computed(() => Boolean(accessToken.value && refreshToken.value))
-  const username = computed(() => {
+  const claims = computed(() => {
     const payload = accessToken.value?.split('.')[1]
-    if (!payload) return ''
+    if (!payload) return {}
 
     try {
-      return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))).name ?? ''
+      return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))) as {
+        name?: string
+        role?: string
+      }
     } catch {
-      return ''
+      return {}
     }
   })
+  const username = computed(() => claims.value.name ?? '')
+  const role = computed(() => claims.value.role ?? '')
 
   function setTokens(access: string, refresh: string) {
     accessToken.value = access
@@ -39,5 +44,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem(REFRESH_TOKEN)
   }
 
-  return { accessToken, refreshToken, isAuthenticated, username, setTokens, logout }
+  return { accessToken, refreshToken, isAuthenticated, username, role, setTokens, logout }
 })

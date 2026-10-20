@@ -75,12 +75,29 @@ export async function apiPost(path: string, body: object) {
   return response.json()
 }
 
+export async function apiPostFile(path: string, file: File) {
+  const body = new FormData()
+  body.append('file', file)
+
+  const response = await request(path, { method: 'POST', body })
+  return response.json()
+}
+
 export async function apiPut(path: string, body: object) {
   await request(path, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
+}
+
+export async function apiPatch(path: string, body: object) {
+  const response = await request(path, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  return response.json()
 }
 
 export async function apiDelete(path: string) {

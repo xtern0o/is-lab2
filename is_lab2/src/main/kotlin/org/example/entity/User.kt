@@ -2,12 +2,15 @@ package org.example.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotBlank
 import org.example.dto.auth.response.UserResponse
+import org.example.entity.enums.Role
 import java.util.UUID
 
 @Entity
@@ -24,9 +27,14 @@ class User(
 
     @field:Column(nullable = false)
     var passwordHash: String,
+
+    @field:Enumerated(EnumType.STRING)
+    @field:Column(nullable = false)
+    var role: Role = Role.USER,
 )
 
 fun User.toResponse() = UserResponse(
     id = id!!,
-    name = name
+    name = name,
+    role = role,
 )

@@ -1,4 +1,4 @@
-package org.example.service
+package org.example.service.movie
 
 import org.example.dto.movie.request.AwardOscarsByLengthRequest
 import org.example.dto.movie.request.MovieUpsertRequest
@@ -8,6 +8,7 @@ import org.example.dto.movie.response.OscarsCountGroupResponse
 import org.example.entity.Coordinates
 import org.example.entity.Movie
 import org.example.entity.Person
+import org.example.entity.enums.MovieGenre
 import org.example.entity.toResponse
 import org.example.repository.CoordinatesRepository
 import org.example.repository.LocationRepository
@@ -16,12 +17,12 @@ import org.example.repository.PersonRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class MovieService(
     private val movieRepository: MovieRepository,
-    private val locationRepository: LocationRepository,
     private val personRepository: PersonRepository,
     private val coordinatesRepository: CoordinatesRepository
 ) {
@@ -41,8 +42,10 @@ class MovieService(
 
     fun getById(id: Int): MovieResponse = findMovieDetailed(id).toResponse()
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun create(request: MovieUpsertRequest): MovieResponse {
+        validateUpsert(request)
+
         val movie = Movie(
             name = requireNotNull(request.name),
             coordinates = findCoordinates(requireNotNull(request.coordinatesId)),
@@ -61,12 +64,15 @@ class MovieService(
         return movieRepository.save(movie).toResponse()
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun update(
         id: Int,
         request: MovieUpsertRequest,
-    ): MovieResponse =
-        findMovieDetailed(id).apply {
+    ): MovieResponse {
+        val movie = findMovieDetailed(id)
+        validateUpsert(request, excludedId = id)
+
+        return movie.apply {
             name = requireNotNull(request.name)
             coordinates = findCoordinates(requireNotNull(request.coordinatesId))
             oscarsCount = requireNotNull(request.oscarsCount)
@@ -80,6 +86,8 @@ class MovieService(
             goldenPalmCount = requireNotNull(request.goldenPalmCount)
             genre = request.genre
         }.toResponse()
+    }
+
 
     @Transactional
     fun delete(id: Int) {
@@ -134,6 +142,47 @@ class MovieService(
                 movieCount = it.movieCount,
             )
         }
+
+    private fun validateUpsert(
+        request: MovieUpsertRequest,
+        excludedId: Int? = null,
+    ) {
+        val name = requireNotNull(request.name)
+        val directorId = requireNotNull(request.directorId)
+        val length = request.length
+        val coordinates = coordinatesRepository.findById(requireNotNull(request.coordinatesId)).orElseThrow()
+        val genre = request.genre
+
+        val exists = if (excludedId == null) {
+            movieRepository.existsByNameIgnoreCaseAndDirectorIdAndLength(
+                name,
+                directorId,
+                length,
+            )
+        } else {
+            movieRepository.existsByNameIgnoreCaseAndDirectorIdAndLengthAndIdNot(
+                name,
+                directorId,
+                length,
+                excludedId,
+            )
+        }
+
+        if (exists) {
+            throw IllegalStateException(
+                "movie with name=$name, directorId=$directorId and length=$length already exists",
+            )
+        }
+
+        if (genre != null) {
+            if (genre == MovieGenre.WESTERN && !(coordinates.x in 200.0..455.0 && coordinates.y in -123..50)) {
+                throw IllegalArgumentException(
+                    "WESTERN фильмы могут быть только с коордами 200<=x<=455, -123<=y<=50. Вы прислали: x=${coordinates.x}, y=${coordinates.y}",
+                )
+            }
+        }
+
+    }
 
 
     private fun findMovieDetailed(id: Int): Movie =

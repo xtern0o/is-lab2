@@ -1,4 +1,4 @@
-package org.example.service
+package org.example.service.location
 
 import org.example.dto.location.request.LocationUpsertRequest
 import org.example.dto.location.response.LocationResponse
@@ -9,6 +9,7 @@ import org.example.repository.PersonRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
@@ -34,8 +35,10 @@ class LocationService(
     fun getById(id: Int): LocationResponse =
         findLocation(id).toResponse()
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun create(request: LocationUpsertRequest): LocationResponse {
+        validateUpsert(request)
+
         val location = Location(
             x = requireNotNull(request.x),
             y = requireNotNull(request.y),
@@ -46,17 +49,20 @@ class LocationService(
         return locationRepository.save(location).toResponse()
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun update(
         id: Int,
         request: LocationUpsertRequest,
-    ): LocationResponse =
-        findLocation(id).apply {
+    ): LocationResponse {
+        validateUpsert(request, excludedId = id)
+
+        return findLocation(id).apply {
             x = requireNotNull(request.x)
             y = requireNotNull(request.y)
             z = requireNotNull(request.z)
             name = request.name
         }.toResponse()
+    }
 
     @Transactional
     fun delete(id: Int) {
@@ -71,9 +77,31 @@ class LocationService(
         locationRepository.deleteById(id)
     }
 
+    /**
+     * unique constraint validation
+     */
+    private fun validateUpsert(request: LocationUpsertRequest, excludedId: Int? = null) {
+        val x = requireNotNull(request.x)
+        val y = requireNotNull(request.y)
+        val z = requireNotNull(request.z)
+
+        val exists = if (excludedId == null) {
+            locationRepository.existsByXAndYAndZ(x, y, z)
+        } else {
+            locationRepository.existsByXAndYAndZAndIdNot(x, y, z, excludedId)
+        }
+
+        if (exists) {
+            throw IllegalStateException(
+                "location with coords ($x, $y, $z) already exists",
+            )
+        }
+    }
+
     private fun findLocation(id: Int): Location =
         locationRepository.findById(id).orElseThrow {
             NoSuchElementException("нет локации с id=$id :(")
         }
+
 
 }

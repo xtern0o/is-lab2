@@ -1,4 +1,4 @@
-package org.example.service
+package org.example.service.coordinates
 
 import org.example.dto.coordinates.request.CoordinatesUpsertRequest
 import org.example.dto.coordinates.response.CoordinatesResponse
@@ -9,6 +9,7 @@ import org.example.repository.MovieRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
@@ -23,8 +24,10 @@ class CoordinatesService(
     fun getById(id: Int): CoordinatesResponse =
         findCoordinates(id).toResponse()
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun create(request: CoordinatesUpsertRequest): CoordinatesResponse {
+        validateUpsert(request)
+
         val coordinates = Coordinates(
             x = requireNotNull(request.x),
             y = requireNotNull(request.y),
@@ -33,15 +36,19 @@ class CoordinatesService(
         return coordinatesRepository.save(coordinates).toResponse()
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     fun update(
         id: Int,
         request: CoordinatesUpsertRequest,
-    ): CoordinatesResponse =
-        findCoordinates(id).apply {
+    ): CoordinatesResponse {
+        validateUpsert(request, excludedId = id)
+
+        return findCoordinates(id).apply {
             x = requireNotNull(request.x)
             y = requireNotNull(request.y)
         }.toResponse()
+    }
+
 
     @Transactional
     fun delete(id: Int) {
@@ -54,6 +61,30 @@ class CoordinatesService(
         }
 
         coordinatesRepository.deleteById(id)
+    }
+
+    private fun validateUpsert(
+        request: CoordinatesUpsertRequest,
+        excludedId: Int? = null,
+    ) {
+        val x = requireNotNull(request.x) {
+            "x обязателен"
+        }
+        val y = requireNotNull(request.y) {
+            "y обязателен"
+        }
+
+        val exists = if (excludedId == null) {
+            coordinatesRepository.existsByXAndY(x, y)
+        } else {
+            coordinatesRepository.existsByXAndYAndIdNot(x, y, excludedId)
+        }
+
+        if (exists) {
+            throw IllegalStateException(
+                "coordinates with x=$x and y=$y already exist",
+            )
+        }
     }
 
     private fun findCoordinates(id: Int): Coordinates =

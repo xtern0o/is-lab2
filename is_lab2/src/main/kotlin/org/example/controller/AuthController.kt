@@ -5,7 +5,7 @@ import org.example.dto.auth.request.RefreshTokenRequest
 import org.example.dto.auth.request.UserLoginRequest
 import org.example.dto.auth.request.UserRegisterRequest
 import org.example.dto.auth.response.TokenResponse
-import org.example.service.AuthService
+import org.example.service.auth.AuthService
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.PostMapping

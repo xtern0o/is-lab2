@@ -6,8 +6,8 @@ import org.example.dto.movie.response.MovieResponse
 import org.example.dto.movie.request.MovieUpsertRequest
 import org.example.dto.movie.response.AwardOscarsResponse
 import org.example.dto.movie.response.OscarsCountGroupResponse
-import org.example.service.DatabaseEventsService
-import org.example.service.MovieService
+import org.example.service.event.DatabaseEventsService
+import org.example.service.movie.MovieService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
